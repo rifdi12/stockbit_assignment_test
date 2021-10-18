@@ -59,7 +59,7 @@ class Chart extends StatelessWidget {
                             reservedSize: 28,
                             interval: 1,
                             getTitles: (value) {
-                              if (num.parse(value.toString()) % 50 == 0) {
+                              if (num.parse(value.toString()) % 10 == 0) {
                                 return value.toString().replaceAll('.0', '');
                               } else {
                                 return '';

@@ -485,9 +485,14 @@ class AlarmHomePage extends StatelessWidget {
                                                       (a, b) => a.compareTo(b));
                                                   int indexNow = listDays
                                                       .indexOf(now.weekday);
-                                                  int nextDay =
-                                                      listDays[indexNow + 1] -
-                                                          now.weekday;
+                                                  int nextDay;
+                                                  if (listDays.length == 1) {
+                                                    nextDay = 7;
+                                                  } else {
+                                                    nextDay =
+                                                        listDays[indexNow + 1] -
+                                                            now.weekday;
+                                                  }
                                                   await AndroidAlarmManager
                                                       .oneShotAt(
                                                     DateTime.parse(
