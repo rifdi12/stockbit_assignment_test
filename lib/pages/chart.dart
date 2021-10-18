@@ -16,10 +16,10 @@ class Chart extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.chevron_left, color: Colors.green),
-          onPressed: () => Get.to(() => Chart()),
+          onPressed: () => Get.back(),
         ),
         title: Text(
-          'Alarm',
+          'Chart',
           style: TextStyle(color: Colors.black),
         ),
       ),
