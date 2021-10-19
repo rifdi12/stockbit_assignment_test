@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:bibit_alarm/controller/clock_controller.dart';
+import 'package:bibit_alarm/helper/clock_analog.dart';
 import 'package:bibit_alarm/helper/clock_slider.dart';
 import 'package:bibit_alarm/helper/database_helper.dart';
 import 'package:bibit_alarm/pages/chart.dart';
@@ -60,7 +61,9 @@ class AlarmHomePage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Get.back();
+                        },
                         child: Text(
                           'Batal',
                           style: TextStyle(
@@ -89,23 +92,62 @@ class AlarmHomePage extends StatelessWidget {
                     ],
                   ),
                   Divider(),
-                  TimePickerSpinner(
-                    onTimeChange: (value) {
-                      ctrl.time.value = value;
+                  SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () async {
+                      TimeOfDay? picked = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay(
+                            hour: ctrl.time.value.hour,
+                            minute: ctrl.time.value.minute),
+                      );
+                      ctrl.time.value = DateTime(
+                          ctrl.timeNow.value.year,
+                          ctrl.timeNow.value.month,
+                          ctrl.timeNow.value.day,
+                          picked!.hour,
+                          picked.minute);
                       ctrl.update();
+                      print(picked);
                     },
-                    isForce2Digits: true,
-                    highlightedTextStyle: TextStyle(
-                      color: Colors.green,
-                      fontSize: 35,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    normalTextStyle: TextStyle(
-                      color: Colors.grey.withOpacity(.5),
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
+                    child: Center(
+                      child: Text(
+                        ' ${DateFormat('HH:mm').format(ctrl.time.value)}',
+                        style: TextStyle(
+                          color: Colors.green,
+                          fontSize: 43,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
+                  SizedBox(height: 10),
+                  // ElevatedButton(
+                  //   onPressed: () async {
+                  //     TimeOfDay? picked = await showTimePicker(
+                  //       context: context,
+                  //       initialTime: TimeOfDay(hour: 1, minute: 12),
+                  //     );
+                  //   },
+                  //   child: Text('Alarm'),
+                  // ),
+                  // TimePickerSpinner(
+                  //   onTimeChange: (value) {
+                  //     ctrl.time.value = value;
+                  //     ctrl.update();
+                  //   },
+                  //   isForce2Digits: true,
+                  //   highlightedTextStyle: TextStyle(
+                  //     color: Colors.green,
+                  //     fontSize: 35,
+                  //     fontWeight: FontWeight.w700,
+                  //   ),
+                  //   normalTextStyle: TextStyle(
+                  //     color: Colors.grey.withOpacity(.5),
+                  //     fontSize: 32,
+                  //     fontWeight: FontWeight.w700,
+                  //   ),
+                  // ),
                   Obx(
                     () => Row(
                       children: [
@@ -320,15 +362,18 @@ class AlarmHomePage extends StatelessWidget {
                 SizedBox(
                   height: 50,
                 ),
-                Obx(
-                  () => Text(
-                    '${DateFormat('HH:mm').format(ctrl.timeNow.value)}',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 70,
-                        fontWeight: FontWeight.w700),
-                  ),
+                ClockView(
+                  size: MediaQuery.of(context).size.height / 4,
                 ),
+                // Obx(
+                //   () => Text(
+                //     '${DateFormat('HH:mm').format(ctrl.timeNow.value)}',
+                //     style: TextStyle(
+                //         color: Colors.black,
+                //         fontSize: 70,
+                //         fontWeight: FontWeight.w700),
+                //   ),
+                // ),
                 SizedBox(
                   height: 80,
                 ),
@@ -372,204 +417,171 @@ class AlarmHomePage extends StatelessWidget {
                       : Container(
                           padding: EdgeInsets.all(50),
                           child: ListView.separated(
-                              separatorBuilder: (context, index) {
-                                return SizedBox(
-                                  height: 50,
-                                );
-                              },
-                              shrinkWrap: true,
-                              itemCount: ctrl.alarmList.length,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemBuilder: (context, index) {
-                                return Slidable(
-                                  actionPane: SlidableDrawerActionPane(),
-                                  secondaryActions: <Widget>[
-                                    Container(
-                                      margin: EdgeInsets.only(left: 10),
-                                      child: IconSlideAction(
-                                        caption: 'Hapus',
-                                        color: Colors.redAccent.withOpacity(.8),
-                                        icon: Icons.delete,
-                                        onTap: () async {
-                                          DatabaseHelper db = DatabaseHelper();
-                                          await db.delete(
-                                              ctrl.alarmList[index]['id'],
-                                              'alarm_table',
-                                              'id');
-                                          ctrl.getAlarm();
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                  actionExtentRatio: 0.25,
-                                  child: Container(
-                                    width: Get.width,
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Container(
-                                          width: Get.width / 2,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                '${DateFormat('HH:mm').format(DateTime.parse(ctrl.alarmList[index]['time']))}',
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 20,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                              ),
-                                              SizedBox(
-                                                height: 5,
-                                              ),
-                                              Text(
-                                                '${getDaysName(json.decode(ctrl.alarmList[index]['days']))} ',
-                                                style: TextStyle(
-                                                    color: Color(0xffA6A6A6),
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                              ),
-                                              Text(
-                                                '${ctrl.alarmList[index]['repeated'] == 0 ? 'Sekali' : 'Berulang'}',
-                                                style: TextStyle(
-                                                    color: Color(0xffA6A6A6),
-                                                    fontSize: 16,
-                                                    fontWeight:
-                                                        FontWeight.w400),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Transform.scale(
-                                          scale: 1.3,
-                                          child: Switch(
-                                            value: ctrl.alarmList[index]
-                                                        ['active'] ==
-                                                    1
-                                                ? true
-                                                : false,
-                                            onChanged: (value) async {
-                                              DatabaseHelper db =
-                                                  DatabaseHelper();
-                                              await db.update({
-                                                'active': ctrl.alarmList[index]
-                                                            ['active'] ==
-                                                        0
-                                                    ? true
-                                                    : false,
-                                                'id': ctrl.alarmList[index]
-                                                    ['id']
-                                              }, 'alarm_table', 'id');
-                                              if (ctrl.alarmList[index]
-                                                      ['active'] ==
-                                                  1) {
-                                                await AndroidAlarmManager
-                                                    .cancel(
-                                                  ctrl.alarmList[index]['id'],
-                                                );
-                                              } else {
-                                                DateTime alarmTime =
-                                                    DateTime.parse(
-                                                        ctrl.alarmList[index]
-                                                            ['time']);
-                                                DateTime now = DateTime.now();
-                                                if (now.isAfter(alarmTime)) {
-                                                  List listDays = jsonDecode(
-                                                      ctrl.alarmList[index]
-                                                          ['days']);
-                                                  listDays.sort(
-                                                      (a, b) => a.compareTo(b));
-                                                  int indexNow = listDays
-                                                      .indexOf(now.weekday);
-                                                  int nextDay;
-                                                  if (listDays.length == 1) {
-                                                    nextDay = 7;
-                                                  } else {
-                                                    nextDay =
-                                                        listDays[indexNow + 1] -
-                                                            now.weekday;
-                                                  }
-                                                  await AndroidAlarmManager
-                                                      .oneShotAt(
-                                                    DateTime.parse(
-                                                            ctrl.alarmList[
-                                                                index]['time'])
-                                                        .add(
-                                                      Duration(days: nextDay),
-                                                    ),
-                                                    ctrl.alarmList[index]['id'],
-                                                    callback,
-                                                    alarmClock: true,
-                                                    allowWhileIdle: true,
-                                                    rescheduleOnReboot: true,
-                                                    exact: true,
-                                                    wakeup: true,
-                                                  );
-                                                } else {
-                                                  await AndroidAlarmManager
-                                                      .oneShotAt(
-                                                    DateTime.parse(
-                                                      ctrl.alarmList[index]
-                                                          ['time'],
-                                                    ),
-                                                    ctrl.alarmList[index]['id'],
-                                                    callback,
-                                                    alarmClock: true,
-                                                    allowWhileIdle: true,
-                                                    rescheduleOnReboot: true,
-                                                    exact: true,
-                                                    wakeup: true,
-                                                  );
-                                                }
-                                              }
-                                              ctrl.getAlarm();
-                                            },
-                                            activeTrackColor:
-                                                Colors.grey.withOpacity(.1),
-                                            inactiveTrackColor:
-                                                Colors.grey.withOpacity(.1),
-                                            activeColor: Colors.green,
-                                          ),
-                                        ),
-                                      ],
+                            separatorBuilder: (context, index) {
+                              return SizedBox(
+                                height: 50,
+                              );
+                            },
+                            shrinkWrap: true,
+                            itemCount: ctrl.alarmList.length,
+                            physics: NeverScrollableScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return Slidable(
+                                actionPane: SlidableDrawerActionPane(),
+                                secondaryActions: <Widget>[
+                                  Container(
+                                    margin: EdgeInsets.only(left: 10),
+                                    child: IconSlideAction(
+                                      caption: 'Hapus',
+                                      color: Colors.redAccent.withOpacity(.8),
+                                      icon: Icons.delete,
+                                      onTap: () async {
+                                        DatabaseHelper db = DatabaseHelper();
+                                        await db.delete(
+                                            ctrl.alarmList[index]['id'],
+                                            'alarm_table',
+                                            'id');
+                                        ctrl.getAlarm();
+                                      },
                                     ),
                                   ),
-                                );
-                              }),
+                                ],
+                                actionExtentRatio: 0.25,
+                                child: Container(
+                                  width: Get.width,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        width: Get.width / 2,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${DateFormat('HH:mm').format(DateTime.parse(ctrl.alarmList[index]['time']))}',
+                                              style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                            SizedBox(
+                                              height: 5,
+                                            ),
+                                            Text(
+                                              '${getDaysName(json.decode(ctrl.alarmList[index]['days']))} ',
+                                              style: TextStyle(
+                                                  color: Color(0xffA6A6A6),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                            Text(
+                                              '${ctrl.alarmList[index]['repeated'] == 0 ? 'Sekali' : 'Berulang'}',
+                                              style: TextStyle(
+                                                  color: Color(0xffA6A6A6),
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Transform.scale(
+                                        scale: 1.3,
+                                        child: Switch(
+                                          value: ctrl.alarmList[index]
+                                                      ['active'] ==
+                                                  1
+                                              ? true
+                                              : false,
+                                          onChanged: (value) async {
+                                            DatabaseHelper db =
+                                                DatabaseHelper();
+                                            await db.update({
+                                              'active': ctrl.alarmList[index]
+                                                          ['active'] ==
+                                                      0
+                                                  ? true
+                                                  : false,
+                                              'id': ctrl.alarmList[index]['id']
+                                            }, 'alarm_table', 'id');
+                                            if (ctrl.alarmList[index]
+                                                    ['active'] ==
+                                                1) {
+                                              await AndroidAlarmManager.cancel(
+                                                ctrl.alarmList[index]['id'],
+                                              );
+                                            } else {
+                                              DateTime alarmTime =
+                                                  DateTime.parse(
+                                                      ctrl.alarmList[index]
+                                                          ['time']);
+                                              DateTime now = DateTime.now();
+                                              if (now.isAfter(alarmTime)) {
+                                                List listDays = jsonDecode(ctrl
+                                                    .alarmList[index]['days']);
+                                                listDays.sort(
+                                                    (a, b) => a.compareTo(b));
+                                                int indexNow = listDays
+                                                    .indexOf(now.weekday);
+                                                int nextDay;
+                                                if (listDays.length == 1) {
+                                                  nextDay = 7;
+                                                } else {
+                                                  nextDay =
+                                                      listDays[indexNow + 1] -
+                                                          now.weekday;
+                                                }
+                                                await AndroidAlarmManager
+                                                    .oneShotAt(
+                                                  DateTime.parse(
+                                                          ctrl.alarmList[index]
+                                                              ['time'])
+                                                      .add(
+                                                    Duration(days: nextDay),
+                                                  ),
+                                                  ctrl.alarmList[index]['id'],
+                                                  callback,
+                                                  alarmClock: true,
+                                                  allowWhileIdle: true,
+                                                  rescheduleOnReboot: true,
+                                                  exact: true,
+                                                  wakeup: true,
+                                                );
+                                              } else {
+                                                await AndroidAlarmManager
+                                                    .oneShotAt(
+                                                  DateTime.parse(
+                                                    ctrl.alarmList[index]
+                                                        ['time'],
+                                                  ),
+                                                  ctrl.alarmList[index]['id'],
+                                                  callback,
+                                                  alarmClock: true,
+                                                  allowWhileIdle: true,
+                                                  rescheduleOnReboot: true,
+                                                  exact: true,
+                                                  wakeup: true,
+                                                );
+                                              }
+                                            }
+                                            ctrl.getAlarm();
+                                          },
+                                          activeTrackColor:
+                                              Colors.grey.withOpacity(.1),
+                                          inactiveTrackColor:
+                                              Colors.grey.withOpacity(.1),
+                                          activeColor: Colors.green,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         ),
                 ),
-                // Row(
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: <Widget>[
-                //     Text(
-                //       'Total alarms fired: ',
-                //     ),
-                //     Text(
-                //       prefs.getInt(countKey).toString(),
-                //       key: ValueKey('BackgroundCountText'),
-                //     ),
-                //   ],
-                // ),
-                // ElevatedButton(
-                //   child: Text(
-                //     'Schedule OneShot Alarm',
-                //   ),
-                //   key: ValueKey('RegisterOneShotAlarm'),
-                //   onPressed: () async {
-                //     await AndroidAlarmManager.oneShot(
-                //       const Duration(seconds: 5),
-                //       // Ensure we have a unique alarm ID.
-                //       Random().nextInt(pow(2, 31).toInt()),
-                //       callback,
-                //       exact: true,
-                //       wakeup: true,
-                //     );
-                //   },
-                // ),
               ],
             ),
           ),

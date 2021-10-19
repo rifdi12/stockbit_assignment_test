@@ -70,19 +70,18 @@ Future<void> main() async {
     }
   }
   for (var item in alarm) {
-    if (item['repeated'] == 0) {
+    if (item['repeated'] == 0 && item['ringing'] == 1) {
       await db.update({'ringing': false, 'active': false, 'id': item['id']},
           'alarm_table', 'id');
-    } else {
+    } else if (item['repeated'] == 1 && item['ringing'] == 1) {
       await db
           .update({'ringing': false, 'id': item['id']}, 'alarm_table', 'id');
-
       DateTime date = DateTime.now();
       List listDays = jsonDecode(item['days']);
       listDays.sort((a, b) => a.compareTo(b));
       int indexNow = listDays.indexOf(date.weekday);
       int nextDay;
-      if (listDays.length == 1) {
+      if (listDays.length == 1 && listDays[0] == date.weekday) {
         nextDay = 7;
       } else {
         nextDay = listDays[indexNow + 1] - date.weekday;
@@ -133,10 +132,10 @@ Future selectNotification(String? payload) async {
     }
   }
   for (var item in alarm) {
-    if (item['repeated'] == 0) {
+    if (item['repeated'] == 0 && item['ringing'] == 1) {
       await db.update({'ringing': false, 'active': false, 'id': item['id']},
           'alarm_table', 'id');
-    } else {
+    } else if (item['repeated'] == 1 && item['ringing'] == 1) {
       await db
           .update({'ringing': false, 'id': item['id']}, 'alarm_table', 'id');
 
@@ -145,12 +144,11 @@ Future selectNotification(String? payload) async {
       listDays.sort((a, b) => a.compareTo(b));
       int indexNow = listDays.indexOf(date.weekday);
       int nextDay;
-      if (listDays.length == 1) {
+      if (listDays.length == 1 && listDays[0] == date.weekday) {
         nextDay = 7;
       } else {
         nextDay = listDays[indexNow + 1] - date.weekday;
       }
-      print(nextDay);
       await AndroidAlarmManager.oneShotAt(
         DateTime.parse("${item['time']}").add(Duration(days: nextDay)),
         item['id'],

@@ -44,6 +44,7 @@ class ClockController extends GetxController {
     DatabaseHelper db = DatabaseHelper();
     var alarm = await db.queryAllRows('alarm_table');
     alarmList.assignAll(alarm);
+    print(alarm);
     update();
   }
 
@@ -69,9 +70,21 @@ class ClockController extends GetxController {
       );
     } else {
       DatabaseHelper db = DatabaseHelper();
-      Get.back();
+      // Get.back();
+      int indexNow = addDay.indexOf(timeNow.value.weekday);
+      int nextDay;
+      if (addDay.length == 1 && addDay[0] == timeNow.value.weekday) {
+        nextDay = 0;
+      } else {
+        nextDay = addDay[indexNow + 1] - timeNow.value.weekday;
+      }
+      print(
+        time.value.add(
+          Duration(days: nextDay),
+        ),
+      );
       var id = await db.insert({
-        "time": "$time",
+        "time": "${time.value}",
         "days": "$addDay",
         "repeated": repeated.value,
         "active": true,
@@ -79,7 +92,9 @@ class ClockController extends GetxController {
       }, 'alarm_table');
       getAlarm();
       await AndroidAlarmManager.oneShotAt(
-        time.value,
+        time.value.add(
+          Duration(days: nextDay),
+        ),
         id,
         callback,
         alarmClock: true,

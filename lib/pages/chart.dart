@@ -1,4 +1,5 @@
 import 'package:bibit_alarm/controller/chart_controller.dart';
+import 'package:bibit_alarm/helper/database_helper.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,6 +38,7 @@ class Chart extends StatelessWidget {
                     aspectRatio: 0.8,
                     child: BarChart(
                       BarChartData(
+                        // maxY: 1000,
                         titlesData: FlTitlesData(
                           show: true,
                           rightTitles: SideTitles(showTitles: false),
@@ -59,7 +61,42 @@ class Chart extends StatelessWidget {
                             reservedSize: 28,
                             interval: 1,
                             getTitles: (value) {
-                              if (num.parse(value.toString()) % 10 == 0) {
+                              int modular = 1;
+                              if (num.parse(
+                                      chartController.maxY.value.toString()) >
+                                  900) {
+                                print('a');
+                                modular = 250;
+                              } else if (num.parse(chartController.maxY.value
+                                          .toString()) <
+                                      500 &&
+                                  num.parse(chartController.maxY.value
+                                          .toString()) >
+                                      100) {
+                                print('b');
+                                modular = 100;
+                              } else if (num.parse(chartController.maxY.value
+                                          .toString()) <
+                                      100 &&
+                                  num.parse(chartController.maxY.value
+                                          .toString()) >
+                                      50) {
+                                print('c');
+                                modular = 25;
+                              } else if (num.parse(chartController.maxY.value
+                                          .toString()) <
+                                      50 &&
+                                  num.parse(chartController.maxY.value
+                                          .toString()) >
+                                      10) {
+                                modular = 10;
+                              } else if (num.parse(
+                                      chartController.maxY.value.toString()) <
+                                  10) {
+                                print('d');
+                                modular = 1;
+                              }
+                              if (num.parse(value.toString()) % modular == 0) {
                                 return value.toString().replaceAll('.0', '');
                               } else {
                                 return '';
