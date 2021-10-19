@@ -110,13 +110,15 @@ class AlarmHomePage extends StatelessWidget {
                       ctrl.update();
                       print(picked);
                     },
-                    child: Center(
-                      child: Text(
-                        ' ${DateFormat('HH:mm').format(ctrl.time.value)}',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 43,
-                          fontWeight: FontWeight.w700,
+                    child: Obx(
+                      () => Center(
+                        child: Text(
+                          ' ${DateFormat('HH:mm').format(ctrl.time.value)}',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 43,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
