@@ -70,7 +70,7 @@ class ClockController extends GetxController {
       );
     } else {
       DatabaseHelper db = DatabaseHelper();
-      // Get.back();
+      Get.back();
       int indexNow = addDay.indexOf(timeNow.value.weekday);
       int nextDay;
       if (addDay.length == 1 && addDay[0] == timeNow.value.weekday) {
